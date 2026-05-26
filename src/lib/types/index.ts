@@ -155,6 +155,7 @@ export const VisitSchema = z.object({
   status: VisitStatus,
   workerNotes: z.string().nullable(),
   managerNotes: z.string().nullable(),
+  completedAt: z.string().nullable().optional(),
   gpsValidated: z.boolean(),
   gpsLatitude: z.number().nullable(),
   gpsLongitude: z.number().nullable(),
@@ -181,6 +182,7 @@ export const UpdateVisitSchema = z.object({
   status: VisitStatus.optional(),
   workerNotes: z.string().optional().nullable(),
   managerNotes: z.string().optional().nullable(),
+  completedAt: z.string().optional().nullable(),
 });
 
 // ---------------------------------------------------------------------------

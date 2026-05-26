@@ -13,7 +13,7 @@ interface Props {
   onClose: () => void;
 }
 
-const MAPS_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? '';
+const NEXT_PUBLIC_GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? '';
 
 export function SingleClientMapModal({ client, open, onClose }: Props) {
   const { t } = useLocale();
@@ -27,7 +27,7 @@ export function SingleClientMapModal({ client, open, onClose }: Props) {
 
   return (
     <BottomSheet open={open} onClose={onClose} title={client.name} className="h-[70vh]">
-      {!MAPS_KEY ? (
+      {!NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ? (
         <div className="flex h-40 items-center justify-center text-sm text-muted-foreground">
           {t('map.apiKeyMissing')}
         </div>
@@ -41,7 +41,7 @@ export function SingleClientMapModal({ client, open, onClose }: Props) {
           </Button>
         </div>
       ) : (
-        <APIProvider apiKey={MAPS_KEY}>
+        <APIProvider apiKey={NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}>
           <div className="h-[50vh] w-full overflow-hidden rounded-lg">
             <Map
               defaultCenter={{ lat, lng }}

@@ -532,3 +532,210 @@ NEXT_PUBLIC_API_URL=http://localhost:4000
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_GOOGLE_MAPS_KEY=
 ```
+# Work Diary UI — Visual Redesign Prompt
+
+Redesign the Work Diary page (`src/app/(app)/page.tsx` and all components under
+`src/components/diary/`) to match the reference screenshot exactly.
+Do not change any API calls, React Query hooks, or data logic — only the visual
+layer changes.
+
+---
+
+## Layout from top to bottom
+
+### 1. Project name / route label
+- Small text above the date, top-left
+- Shows the project name (e.g. "בריכות 2.0") or the route/project label for the day
+- Font: small, muted colour (`text-muted-foreground text-sm`)
+
+### 2. Date header row
+Left side:
+- Day of week (e.g. "יום שלישי") — small, muted
+- Date number large and bold (e.g. "26") — `text-4xl font-bold`
+- Month name next to it (e.g. "מאי") — `text-4xl font-light`
+
+Right side:
+- Progress badge: "X/Y ✓" — pill shape, green background (`bg-green-100 text-green-700`),
+  shows completed count / total count for the day
+- Use `visits.filter(v => v.status === 'completed').length` for X, total visits for Y
+
+### 3. Progress bar
+- Full-width thin bar below the date row
+- `h-1.5 rounded-full bg-gray-200` track
+- Fill: `bg-blue-500 rounded-full` — width = `(completedCount / totalCount) * 100%`
+- Animate fill with `transition-all duration-500`
+
+### 4. Optimize route button
+- Pill-shaped outlined button, left-aligned, below the progress bar
+- Icon: navigation/arrow icon (lucide `Navigation` or `Send`)
+- Label: `t('diary.optimizeRoute')` — add to en.json: `"Optimize route"`, he.json: `"מיטוב מסלול"`
+- Style: `border border-gray-300 rounded-full px-4 py-2 text-sm flex items-center gap-2`
+- On click: opens Google Maps with all today's client addresses as waypoints (future — for now just a placeholder `onClick`)
+
+### 5. Client cards list
+Vertically stacked cards with `gap-3`. No horizontal padding on the list itself.
+
+---
+
+## Client Card — detailed spec
+
+### Card container
+```
+rounded-2xl bg-white shadow-sm p-4
+flex flex-row items-start gap-3
+rtl:flex-row-reverse
+```
+
+**Completed card** — when `visit.status === 'completed'`:
+```
+bg-green-50 border border-green-100
+```
+All text inside turns `text-green-800`.
+The completion time is shown below the address: `⏱ 13:48` style, small muted green text.
+
+**Pending card** — `bg-white shadow-sm`
+
+### Left: avatar circle
+- Circle, 44×44px
+- Background: soft muted colour derived from client name initial (use a fixed palette of 6-8 pastel colours, pick by `name.charCodeAt(0) % palette.length`)
+- Letter: first letter of `client.name`, uppercase, `font-semibold text-base`
+- Completed state: avatar background becomes `bg-green-200`
+
+### Center: client info (flex-1)
+```
+flex flex-col gap-0.5
+```
+- **Name**: `font-semibold text-base` — `client.name`
+- **Address**: small muted row with a location pin icon (lucide `MapPin` size 12) — `client.address`
+- **Notes**: if `client.note` exists, show as small muted text below address (no icon)
+- **Completion time**: if `visit.status === 'completed'` and `visit.completedAt`, show
+  `⏱ HH:mm` in small green text (`text-green-600 text-xs`) below the address
+
+### Right: action buttons column
+Three stacked icon buttons, each 44×44px, `rounded-xl`:
+
+```
+flex flex-col gap-2
+```
+
+| Button | Icon | Colour | Action |
+|--------|------|--------|--------|
+| Phone  | lucide `Phone` | `bg-green-500 text-white` | `tel:${client.phone}` — hidden if no phone |
+| Navigate | lucide `Navigation` (filled/arrow) | `bg-blue-500 text-white` | Google Maps directions deeplink |
+| Complete | lucide `Check` | Pending: `bg-gray-200 text-gray-500` / Completed: `bg-green-500 text-white` | `PATCH /visits/:id { status: 'completed', completedAt: new Date() }` |
+
+All three buttons always visible. Phone button is greyed out (`bg-gray-100 text-gray-400`) if `client.phone` is null.
+
+---
+
+## Bottom navigation — update to match screenshot
+
+Current bottom nav must be updated to match these 5 items exactly:
+
+| Icon | Label (EN) | Label (HE) | Route | Active style |
+|------|-----------|-----------|-------|-------------|
+| ☀️ Sun (lucide `Sun`) | Today | היום | `/` | Pill background + label below, icon filled |
+| 🗺️ Map (lucide `Map`) | Map | מפה | `/map` | Icon only highlighted |
+| 📅 Calendar (lucide `CalendarDays`) | Month | חודש | `/diary/month` | Icon only highlighted |
+| 👥 Clients (lucide `Users`) | Clients | לקוחות | `/clients` | Icon only highlighted |
+| 👤 Profile (lucide `CircleUser`) | Profile | פרופיל | `/profile` | Icon only highlighted |
+
+Active item style:
+- Active tab gets a **pill/bubble background** behind the icon+label:
+  `bg-white rounded-full px-3 py-1 shadow-sm`
+- Inactive: icon only, no label shown (or label very small and muted)
+
+Bottom nav container:
+```
+fixed bottom-0 left-0 right-0
+bg-gray-100/90 backdrop-blur
+flex flex-row justify-around items-center
+px-4 py-3 pb-safe
+rounded-t-3xl
+```
+
+---
+
+## Colour tokens (add to tailwind.config.ts if not present)
+
+These match the screenshot palette:
+```js
+// All already available via Tailwind defaults:
+// bg-green-500  → completed action buttons
+// bg-green-50   → completed card background
+// bg-green-100  → progress badge background
+// bg-blue-500   → navigate button
+// bg-gray-200   → pending complete button
+// bg-gray-100   → nav background
+```
+
+No custom colours needed — use Tailwind defaults throughout.
+
+---
+
+## Translation keys to add
+
+Add to both `src/lib/i18n/en.json` and `src/lib/i18n/he.json`:
+
+```json
+// en.json additions:
+"diary.optimizeRoute": "Optimize route",
+"diary.completedAt": "Completed at",
+"diary.progress": "{{done}} of {{total}} done",
+"nav.today": "Today",
+"nav.month": "Month"
+
+// he.json additions:
+"diary.optimizeRoute": "מיטוב מסלול",
+"diary.completedAt": "הושלם ב",
+"diary.progress": "{{done}} מתוך {{total}} הושלמו",
+"nav.today": "היום",
+"nav.month": "חודש"
+```
+
+---
+
+## Complete action behaviour
+
+When the ✓ button is tapped on a pending card:
+1. Optimistic update — immediately flip card to green completed style
+2. Call `PATCH /visits/:id` with `{ status: 'completed', completedAt: new Date().toISOString() }`
+3. On success: invalidate `useVisitsByDate` React Query cache
+4. On error: revert optimistic update, show error toast
+
+When tapped on an already-completed card:
+- No action (button is non-interactive, stays green)
+
+---
+
+## Files to modify
+
+- `src/components/diary/ClientCard.tsx` — full visual rebuild per spec above
+- `src/components/diary/DayVisitList.tsx` — add progress bar + date header + optimize button
+- `src/components/nav/BottomNav.tsx` — rebuild to match 5-item layout above
+- `src/lib/i18n/en.json` + `he.json` — add new keys
+- `src/app/(app)/page.tsx` — pass project name / route label down to DayVisitList
+
+## Do NOT modify
+
+- Any file in `src/lib/api/`
+- Any file in `src/lib/hooks/`
+- `src/lib/store/auth.ts`
+- `src/middleware.ts`
+- Anything in `golipooli-api/`
+
+---
+
+## Acceptance criteria
+
+- [ ] Date header shows day-of-week + large date number + month name
+- [ ] Progress badge shows "X/Y ✓" with correct counts
+- [ ] Blue progress bar fills proportionally to completion %
+- [ ] "Optimize route" pill button visible below progress bar
+- [ ] Pending cards: white background, grey complete button
+- [ ] Completed cards: green tint background, green complete button, completion time shown
+- [ ] Avatar circle shows correct initial with pastel color
+- [ ] All three action buttons are 44×44px rounded squares stacked vertically on the right
+- [ ] Bottom nav matches 5-item layout with pill active state on current tab
+- [ ] RTL layout correct — action buttons on left side when `dir="rtl"`
+- [ ] `npm run build` passes with zero TypeScript errors

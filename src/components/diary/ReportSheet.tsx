@@ -13,13 +13,27 @@ interface Props {
   visit: VisitWithDetails;
   open: boolean;
   onClose: () => void;
+  /**
+   * 'edit'     — save notes only (default; for the 📋 report icon)
+   * 'complete' — save notes AND flip the visit to status='completed'
+   */
+  mode?: 'edit' | 'complete';
+  /** Fired after a successful complete-mode save. */
+  onCompleted?: () => void;
 }
 
-export function ReportSheet({ visit, open, onClose }: Props) {
+export function ReportSheet({
+  visit,
+  open,
+  onClose,
+  mode = 'edit',
+  onCompleted,
+}: Props) {
   const { t } = useLocale();
   const role = useAuthStore((s) => s.user?.role);
   const isAdmin = role === 'admin' || role === 'project_manager';
   const updateVisit = useUpdateVisit();
+  const isCompleteMode = mode === 'complete';
 
   const [workerNotes, setWorkerNotes] = useState(visit.workerNotes ?? '');
   const [managerNotes, setManagerNotes] = useState(visit.managerNotes ?? '');
@@ -30,11 +44,23 @@ export function ReportSheet({ visit, open, onClose }: Props) {
       input: {
         workerNotes,
         ...(isAdmin ? { managerNotes } : {}),
+        ...(isCompleteMode
+          ? { status: 'completed' as const, completedAt: new Date().toISOString() }
+          : {}),
       },
     });
-    toast.success('Report saved');
+    toast.success(isCompleteMode ? t('diary.markComplete') : t('common.save'));
+    if (isCompleteMode) onCompleted?.();
     onClose();
   };
+
+  const primaryLabel = updateVisit.isPending
+    ? isCompleteMode
+      ? t('diary.completing')
+      : t('common.saving')
+    : isCompleteMode
+      ? t('diary.markComplete')
+      : t('common.save');
 
   return (
     <BottomSheet open={open} onClose={onClose} title={t('diary.report')}>
@@ -46,6 +72,7 @@ export function ReportSheet({ visit, open, onClose }: Props) {
             placeholder={t('diary.reportPlaceholder')}
             value={workerNotes}
             onChange={(e) => setWorkerNotes(e.target.value)}
+            autoFocus
           />
         </div>
 
@@ -62,8 +89,16 @@ export function ReportSheet({ visit, open, onClose }: Props) {
         )}
 
         <div className="flex gap-2 rtl:flex-row-reverse">
-          <Button onClick={handleSave} disabled={updateVisit.isPending} className="flex-1">
-            {updateVisit.isPending ? t('common.saving') : t('common.save')}
+          <Button
+            onClick={handleSave}
+            disabled={updateVisit.isPending}
+            className={
+              isCompleteMode
+                ? 'flex-1 bg-green-600 text-white hover:bg-green-700'
+                : 'flex-1'
+            }
+          >
+            {primaryLabel}
           </Button>
           <Button variant="outline" onClick={onClose} className="flex-1">
             {t('common.cancel')}

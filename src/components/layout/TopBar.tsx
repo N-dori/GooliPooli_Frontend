@@ -6,13 +6,14 @@ import { UserAvatar } from '@/components/ui/UserAvatar';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 
 const ROUTE_TITLES: Record<string, string> = {
-  '/diary': 'nav.diary',
+  '/diary/month': 'nav.month',
+  '/diary': 'nav.today',
   '/clients': 'nav.clients',
   '/map': 'nav.map',
   '/users': 'nav.users',
   '/profile': 'profile.title',
   '/projects': 'projects.title',
-  '/dashboard': 'nav.diary',
+  '/dashboard': 'nav.today',
 };
 
 export function TopBar() {

@@ -3,6 +3,7 @@
 import type { Client, CreateClientInput, UpdateClientInput } from '@/lib/types';
 import { CreateClientSchema } from '@/lib/types';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { MapPin } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
@@ -13,6 +14,25 @@ import { useLocale } from '@/lib/i18n/LocaleContext';
 
 interface Props {
   client?: Client;
+}
+
+const MAPS_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? '';
+
+/** Geocode a free-text address → { lat, lng } using the Google Geocoding REST API. */
+async function geocodeAddress(address: string): Promise<{ lat: number; lng: number } | null> {
+  if (!address.trim() || !MAPS_KEY) return null;
+  try {
+    const res = await fetch(
+      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${MAPS_KEY}`,
+    );
+    const json = (await res.json()) as {
+      results: { geometry: { location: { lat: number; lng: number } } }[];
+    };
+    const loc = json.results?.[0]?.geometry?.location;
+    return loc ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export function ClientForm({ client }: Props) {
@@ -35,6 +55,21 @@ export function ClientForm({ client }: Props) {
       projectId: client?.projectId ?? undefined,
     },
   });
+
+  const lat = form.watch('latitude');
+  const lng = form.watch('longitude');
+  const hasCoords = lat != null && lng != null;
+
+  /** Called when the address field loses focus — resolve coordinates silently. */
+  const handleAddressBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
+    // Keep RHF's own onBlur wired up
+    form.register('address').onBlur(e);
+    const coords = await geocodeAddress(e.target.value);
+    if (coords) {
+      form.setValue('latitude', coords.lat);
+      form.setValue('longitude', coords.lng);
+    }
+  };
 
   const onSubmit = async (data: CreateClientInput) => {
     if (isEdit) {
@@ -60,7 +95,19 @@ export function ClientForm({ client }: Props) {
 
       <div className="space-y-1.5">
         <Label htmlFor="address">{t('clients.address')} *</Label>
-        <Input id="address" {...form.register('address')} />
+        <Input
+          id="address"
+          placeholder={t('clients.addressPlaceholder')}
+          {...form.register('address')}
+          onBlur={handleAddressBlur}
+        />
+        {/* Show a small badge once coordinates have been resolved */}
+        {hasCoords && (
+          <p className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+            <MapPin className="h-3 w-3" />
+            {t('clients.locationPinned')}
+          </p>
+        )}
         {form.formState.errors.address && (
           <p className="text-xs text-destructive">{form.formState.errors.address.message}</p>
         )}
@@ -79,27 +126,6 @@ export function ClientForm({ client }: Props) {
       <div className="space-y-1.5">
         <Label htmlFor="note">{t('clients.notes')}</Label>
         <Input id="note" {...form.register('note')} />
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-1.5">
-          <Label htmlFor="latitude">{t('clients.latitude')}</Label>
-          <Input
-            id="latitude"
-            type="number"
-            step="any"
-            {...form.register('latitude', { valueAsNumber: true })}
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="longitude">{t('clients.longitude')}</Label>
-          <Input
-            id="longitude"
-            type="number"
-            step="any"
-            {...form.register('longitude', { valueAsNumber: true })}
-          />
-        </div>
       </div>
 
       <div className="flex gap-2 rtl:flex-row-reverse">

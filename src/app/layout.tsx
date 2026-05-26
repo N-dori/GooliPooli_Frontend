@@ -3,10 +3,10 @@ import type { Metadata, Viewport } from 'next';
 import { Providers } from '@/lib/providers/Providers';
 
 export const metadata: Metadata = {
-  title: 'Golipooli',
+  title: 'Goolipooli',
   description: 'Pool cleaning operations management',
   manifest: '/manifest.json',
-  applicationName: 'Golipooli',
+  applicationName: 'Goolipooli',
   appleWebApp: { capable: true, statusBarStyle: 'default', title: 'Golipooli' },
 };
 
