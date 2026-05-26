@@ -55,7 +55,7 @@ export function ClientForm({ client }: Props) {
       projectId: client?.projectId ?? undefined,
     },
   });
-
+  console.log('ClientForm defaultValues', {form});
   const lat = form.watch('latitude');
   const lng = form.watch('longitude');
   const hasCoords = lat != null && lng != null;
