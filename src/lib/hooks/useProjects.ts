@@ -49,3 +49,40 @@ export function useUpdateProject(id: string) {
     onError: (err: Error) => toast.error(err.message),
   });
 }
+
+export function useDeleteProject() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => projectsApi.remove(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: projectKeys.all });
+      toast.success('Project deleted');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
+
+export function useAddProjectMember(projectId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ userId, role }: { userId: string; role: 'owner' | 'member' }) =>
+      projectsApi.addMember(projectId, { userId, role }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: projectKeys.detail(projectId) });
+      toast.success('Member added');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
+
+export function useRemoveProjectMember(projectId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) => projectsApi.removeMember(projectId, userId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: projectKeys.detail(projectId) });
+      toast.success('Member removed');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}

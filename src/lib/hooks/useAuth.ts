@@ -15,7 +15,7 @@ export function useLogin() {
     onSuccess: (session) => {
       setSession(session.user, session.tokens);
       toast.success('Welcome back');
-      router.push('/dashboard');
+      router.push('/diary');
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -29,7 +29,7 @@ export function useSignup() {
     onSuccess: (session) => {
       setSession(session.user, session.tokens);
       toast.success('Account created');
-      router.push('/dashboard');
+      router.push('/diary');
     },
     onError: (err: Error) => toast.error(err.message),
   });

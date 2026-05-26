@@ -92,6 +92,113 @@ export const UpdateProjectSchema = z.object({
   status: ProjectStatus.optional(),
 });
 
+export const ProjectMemberSchema = z.object({
+  userId: z.string().uuid(),
+  role: ProjectMemberRole,
+});
+
+// Project with nested details (from GET /projects/:id)
+export const ProjectMemberDetailSchema = z.object({
+  userId: z.string().uuid(),
+  role: ProjectMemberRole,
+  user: PublicUserSchema.optional(),
+});
+
+// ---------------------------------------------------------------------------
+// Client
+// ---------------------------------------------------------------------------
+export const ClientSchema = z.object({
+  id: z.string().uuid(),
+  projectId: z.string().uuid().nullable(),
+  name: z.string().min(1).max(200),
+  address: z.string().min(1),
+  phone: z.string().nullable(),
+  note: z.string().nullable(),
+  gateCode: z.string().nullable(),
+  latitude: z.number().nullable(),
+  longitude: z.number().nullable(),
+  recurringSchedule: z.record(z.unknown()).nullable(),
+  visitsPerMonth: z.number().int().nullable(),
+  isOneTime: z.boolean(),
+  isActive: z.boolean(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+});
+
+export const CreateClientSchema = z.object({
+  projectId: z.string().uuid().optional().nullable(),
+  name: z.string().min(1, 'Name is required').max(200),
+  address: z.string().min(1, 'Address is required'),
+  phone: z.string().optional().nullable(),
+  note: z.string().optional().nullable(),
+  gateCode: z.string().optional().nullable(),
+  latitude: z.number().optional().nullable(),
+  longitude: z.number().optional().nullable(),
+  recurringSchedule: z.record(z.unknown()).optional().nullable(),
+  visitsPerMonth: z.number().int().optional().nullable(),
+  isOneTime: z.boolean().optional(),
+});
+
+export const UpdateClientSchema = CreateClientSchema.partial().extend({
+  isActive: z.boolean().optional(),
+});
+
+// ---------------------------------------------------------------------------
+// Visit
+// ---------------------------------------------------------------------------
+export const VisitSchema = z.object({
+  id: z.string().uuid(),
+  projectId: z.string().uuid(),
+  clientId: z.string().uuid(),
+  workerId: z.string().uuid().nullable(),
+  scheduledDate: z.string(),
+  status: VisitStatus,
+  workerNotes: z.string().nullable(),
+  managerNotes: z.string().nullable(),
+  gpsValidated: z.boolean(),
+  gpsLatitude: z.number().nullable(),
+  gpsLongitude: z.number().nullable(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+});
+
+export const VisitWithDetailsSchema = VisitSchema.extend({
+  client: ClientSchema.optional(),
+  project: ProjectSchema.optional(),
+  worker: PublicUserSchema.optional(),
+});
+
+export const CreateVisitSchema = z.object({
+  projectId: z.string().uuid(),
+  clientId: z.string().uuid(),
+  workerId: z.string().uuid().optional().nullable(),
+  scheduledDate: z.string(),
+});
+
+export const UpdateVisitSchema = z.object({
+  workerId: z.string().uuid().optional().nullable(),
+  scheduledDate: z.string().optional(),
+  status: VisitStatus.optional(),
+  workerNotes: z.string().optional().nullable(),
+  managerNotes: z.string().optional().nullable(),
+});
+
+// ---------------------------------------------------------------------------
+// User Management
+// ---------------------------------------------------------------------------
+export const CreateUserSchema = z.object({
+  username: z.string().min(2).max(64),
+  email: z.string().email(),
+  password: z.string().min(8).max(128),
+  role: UserRole,
+});
+
+export const UpdateUserSchema = z.object({
+  username: z.string().min(2).max(64).optional(),
+  role: UserRole.optional(),
+  avatarUrl: z.string().url().optional().nullable(),
+});
+
 // ---------------------------------------------------------------------------
 // Pagination
 // ---------------------------------------------------------------------------
@@ -134,6 +241,20 @@ export type AuthSession = z.infer<typeof AuthSessionSchema>;
 export type Project = z.infer<typeof ProjectSchema>;
 export type CreateProjectInput = z.infer<typeof CreateProjectSchema>;
 export type UpdateProjectInput = z.infer<typeof UpdateProjectSchema>;
+export type ProjectMember = z.infer<typeof ProjectMemberSchema>;
+export type ProjectMemberDetail = z.infer<typeof ProjectMemberDetailSchema>;
+
+export type Client = z.infer<typeof ClientSchema>;
+export type CreateClientInput = z.infer<typeof CreateClientSchema>;
+export type UpdateClientInput = z.infer<typeof UpdateClientSchema>;
+
+export type Visit = z.infer<typeof VisitSchema>;
+export type VisitWithDetails = z.infer<typeof VisitWithDetailsSchema>;
+export type CreateVisitInput = z.infer<typeof CreateVisitSchema>;
+export type UpdateVisitInput = z.infer<typeof UpdateVisitSchema>;
+
+export type CreateUserInput = z.infer<typeof CreateUserSchema>;
+export type UpdateUserInput = z.infer<typeof UpdateUserSchema>;
 
 export type Notification = z.infer<typeof NotificationSchema>;
 
@@ -154,4 +275,11 @@ export interface ApiError {
 export interface ApiResponse<T> {
   data?: T;
   error?: ApiError;
+}
+
+// Project with full details returned from GET /projects/:id
+export interface ProjectWithDetails extends Project {
+  members?: ProjectMemberDetail[];
+  clientCount?: number;
+  clients?: Client[];
 }

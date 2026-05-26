@@ -25,7 +25,7 @@ function OAuthCallbackInner() {
       .me()
       .then((user) => {
         setSession(user, { accessToken, refreshToken });
-        router.replace('/dashboard');
+        router.replace('/diary');
       })
       .catch(() => {
         toast.error('Could not load profile');
