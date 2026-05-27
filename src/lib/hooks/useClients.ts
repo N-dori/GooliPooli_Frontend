@@ -11,7 +11,7 @@ export const clientKeys = {
   detail: (id: string) => [...clientKeys.all, 'detail', id] as const,
 };
 
-export function useClientList(params?: { projectId?: string; search?: string; page?: number }) {
+export function useClientList(params?: { search?: string; page?: number }) {
   return useQuery({
     queryKey: clientKeys.list(params),
     queryFn: () => clientsApi.list(params),
@@ -29,7 +29,7 @@ export function useClient(id: string | undefined) {
 export function useCreateClient() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: CreateClientInput) => clientsApi.create(input),
+    mutationFn: (data: CreateClientInput) => clientsApi.create(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: clientKeys.all });
       toast.success('Client created');

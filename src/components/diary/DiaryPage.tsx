@@ -29,9 +29,6 @@ export function DiaryPage() {
     (v) => v.scheduledDate.slice(0, 10) === todayStr,
   );
 
-  // Extract project name from today's visits
-  const projectName = dayVisits[0]?.project?.name ?? '';
-
   if (error) {
     return (
       <p className="rounded-xl border border-dashed py-10 text-center text-sm text-muted-foreground">
@@ -42,7 +39,7 @@ export function DiaryPage() {
 
   return (
     <div className="space-y-4">
-      {isLoading && !projectName ? (
+      {isLoading ? (
         <div className="space-y-4">
           <div className="h-16 animate-pulse rounded-xl bg-muted/40" />
           <div className="h-2 animate-pulse rounded-full bg-muted/40" />
@@ -52,7 +49,7 @@ export function DiaryPage() {
           ))}
         </div>
       ) : (
-        <DayVisitList visits={dayVisits} date={today} projectName={projectName} />
+        <DayVisitList visits={dayVisits} date={today} />
       )}
     </div>
   );

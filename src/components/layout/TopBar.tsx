@@ -13,7 +13,6 @@ const ROUTE_TITLES: Record<string, string> = {
   '/users': 'nav.users',
   '/profile': 'profile.title',
   '/projects': 'projects.title',
-  '/dashboard': 'nav.today',
 };
 
 export function TopBar() {

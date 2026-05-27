@@ -1,5 +1,5 @@
-import { ProjectIndex } from '@/components/projects/ProjectIndex';
+import { AppSettings } from '@/components/projects/AppSettings';
 
 export default function ProjectsPage() {
-  return <ProjectIndex />;
+  return <AppSettings />;
 }

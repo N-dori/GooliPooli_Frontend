@@ -6,7 +6,6 @@ import { z } from 'zod';
 export const UserRole = z.enum(['admin', 'project_manager', 'worker']);
 export const AuthProvider = z.enum(['password', 'google']);
 export const ProjectStatus = z.enum(['active', 'paused', 'archived', 'done']);
-export const ProjectMemberRole = z.enum(['owner', 'member']);
 export const VisitStatus = z.enum([
   'scheduled',
   'in_progress',
@@ -65,25 +64,16 @@ export const AuthSessionSchema = z.object({
 });
 
 // ---------------------------------------------------------------------------
-// Project
+// Project (single global app instance — not a scope)
 // ---------------------------------------------------------------------------
 export const ProjectSchema = z.object({
   id: z.string().uuid(),
   name: z.string().min(2).max(120),
-  code: z
-    .string()
-    .length(6)
-    .regex(/^[A-Z0-9]{6}$/),
   description: z.string().nullable(),
   status: ProjectStatus,
   createdBy: z.string().uuid(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
-});
-
-export const CreateProjectSchema = z.object({
-  name: z.string().min(2).max(120),
-  description: z.string().max(2000).nullable().optional(),
 });
 
 export const UpdateProjectSchema = z.object({
@@ -92,24 +82,11 @@ export const UpdateProjectSchema = z.object({
   status: ProjectStatus.optional(),
 });
 
-export const ProjectMemberSchema = z.object({
-  userId: z.string().uuid(),
-  role: ProjectMemberRole,
-});
-
-// Project with nested details (from GET /projects/:id)
-export const ProjectMemberDetailSchema = z.object({
-  userId: z.string().uuid(),
-  role: ProjectMemberRole,
-  user: PublicUserSchema.optional(),
-});
-
 // ---------------------------------------------------------------------------
 // Client
 // ---------------------------------------------------------------------------
 export const ClientSchema = z.object({
   id: z.string().uuid(),
-  projectId: z.string().uuid().nullable(),
   name: z.string().min(1).max(200),
   address: z.string().min(1),
   phone: z.string().nullable(),
@@ -126,7 +103,6 @@ export const ClientSchema = z.object({
 });
 
 export const CreateClientSchema = z.object({
-  projectId: z.string().uuid().optional().nullable(),
   name: z.string().min(1, 'Name is required').max(200),
   address: z.string().min(1, 'Address is required'),
   phone: z.string().optional().nullable(),
@@ -148,7 +124,6 @@ export const UpdateClientSchema = CreateClientSchema.partial().extend({
 // ---------------------------------------------------------------------------
 export const VisitSchema = z.object({
   id: z.string().uuid(),
-  projectId: z.string().uuid(),
   clientId: z.string().uuid(),
   workerId: z.string().uuid().nullable(),
   scheduledDate: z.string(),
@@ -165,12 +140,10 @@ export const VisitSchema = z.object({
 
 export const VisitWithDetailsSchema = VisitSchema.extend({
   client: ClientSchema.optional(),
-  project: ProjectSchema.optional(),
   worker: PublicUserSchema.optional(),
 });
 
 export const CreateVisitSchema = z.object({
-  projectId: z.string().uuid(),
   clientId: z.string().uuid(),
   workerId: z.string().uuid().optional().nullable(),
   scheduledDate: z.string(),
@@ -228,7 +201,6 @@ export const NotificationSchema = z.object({
 export type UserRole = z.infer<typeof UserRole>;
 export type AuthProvider = z.infer<typeof AuthProvider>;
 export type ProjectStatus = z.infer<typeof ProjectStatus>;
-export type ProjectMemberRole = z.infer<typeof ProjectMemberRole>;
 export type VisitStatus = z.infer<typeof VisitStatus>;
 export type NotificationType = z.infer<typeof NotificationType>;
 
@@ -241,10 +213,7 @@ export type AuthTokens = z.infer<typeof AuthTokensSchema>;
 export type AuthSession = z.infer<typeof AuthSessionSchema>;
 
 export type Project = z.infer<typeof ProjectSchema>;
-export type CreateProjectInput = z.infer<typeof CreateProjectSchema>;
 export type UpdateProjectInput = z.infer<typeof UpdateProjectSchema>;
-export type ProjectMember = z.infer<typeof ProjectMemberSchema>;
-export type ProjectMemberDetail = z.infer<typeof ProjectMemberDetailSchema>;
 
 export type Client = z.infer<typeof ClientSchema>;
 export type CreateClientInput = z.infer<typeof CreateClientSchema>;
@@ -279,9 +248,3 @@ export interface ApiResponse<T> {
   error?: ApiError;
 }
 
-// Project with full details returned from GET /projects/:id
-export interface ProjectWithDetails extends Project {
-  members?: ProjectMemberDetail[];
-  clientCount?: number;
-  clients?: Client[];
-}

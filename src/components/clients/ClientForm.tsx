@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { useCreateClient, useUpdateClient } from '@/lib/hooks/useClients';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 
-interface Props {
+interface ClientFormProps {
   client?: Client;
 }
 
@@ -35,7 +35,7 @@ async function geocodeAddress(address: string): Promise<{ lat: number; lng: numb
   }
 }
 
-export function ClientForm({ client }: Props) {
+export function ClientForm({ client }: ClientFormProps) {
   const { t } = useLocale();
   const router = useRouter();
   const createMutation = useCreateClient();
@@ -52,17 +52,15 @@ export function ClientForm({ client }: Props) {
       gateCode: client?.gateCode ?? '',
       latitude: client?.latitude ?? undefined,
       longitude: client?.longitude ?? undefined,
-      projectId: client?.projectId ?? undefined,
     },
   });
-  console.log('ClientForm defaultValues', {form});
+
   const lat = form.watch('latitude');
   const lng = form.watch('longitude');
   const hasCoords = lat != null && lng != null;
 
   /** Called when the address field loses focus — resolve coordinates silently. */
   const handleAddressBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
-    // Keep RHF's own onBlur wired up
     form.register('address').onBlur(e);
     const coords = await geocodeAddress(e.target.value);
     if (coords) {
@@ -101,7 +99,6 @@ export function ClientForm({ client }: Props) {
           {...form.register('address')}
           onBlur={handleAddressBlur}
         />
-        {/* Show a small badge once coordinates have been resolved */}
         {hasCoords && (
           <p className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
             <MapPin className="h-3 w-3" />

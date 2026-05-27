@@ -8,10 +8,9 @@ import { DiaryClientCard } from './ClientCard';
 interface Props {
   visits: VisitWithDetails[];
   date: Date;
-  projectName?: string;
 }
 
-export function DayVisitList({ visits, date, projectName }: Props) {
+export function DayVisitList({ visits, date }: Props) {
   const { t, locale } = useLocale();
 
   // ── Date parts ────────────────────────────────────────────────────────────
@@ -42,11 +41,6 @@ export function DayVisitList({ visits, date, projectName }: Props) {
 
   return (
     <div className="space-y-4">
-      {/* ── Project / route label ──────────────────────────────────────── */}
-      {projectName && (
-        <p className="text-sm text-muted-foreground">{projectName}</p>
-      )}
-
       {/* ── Date header row ────────────────────────────────────────────── */}
       <div className="flex items-end justify-between gap-2 rtl:flex-row-reverse">
         {/* Left: day-of-week + date number + month */}

@@ -7,13 +7,11 @@ export const visitsApi = {
   list: (params: {
     dateFrom?: string;
     dateTo?: string;
-    projectId?: string;
     workerId?: string;
   }) => {
     const qs = new URLSearchParams();
     if (params.dateFrom) qs.set('dateFrom', params.dateFrom);
     if (params.dateTo) qs.set('dateTo', params.dateTo);
-    if (params.projectId) qs.set('projectId', params.projectId);
     if (params.workerId) qs.set('workerId', params.workerId);
     return api.get<Paginated<VisitWithDetails>>(`/visits?${qs.toString()}`);
   },
