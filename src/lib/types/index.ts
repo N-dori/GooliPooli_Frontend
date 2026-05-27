@@ -147,6 +147,10 @@ export const CreateVisitSchema = z.object({
   clientId: z.string().uuid(),
   workerId: z.string().uuid().optional().nullable(),
   scheduledDate: z.string(),
+  gpsLatitude: z.number().optional().nullable(),
+  gpsLongitude: z.number().optional().nullable(),
+  workerNotes: z.string().optional().nullable(),
+  managerNotes: z.string().optional().nullable(),
 });
 
 export const UpdateVisitSchema = z.object({

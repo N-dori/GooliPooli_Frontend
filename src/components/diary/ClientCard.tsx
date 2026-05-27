@@ -2,6 +2,7 @@
 
 import type { VisitStatus, VisitWithDetails } from '@/lib/types';
 import { Check, MapPin, Navigation, Phone } from 'lucide-react';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { ReportSheet } from './ReportSheet';
 import { useLocale } from '@/lib/i18n/LocaleContext';
@@ -83,56 +84,60 @@ export function DiaryClientCard({ visit }: Props) {
           : 'bg-white shadow-sm dark:bg-card dark:shadow-none dark:border dark:border-border',
       )}
     >
-      {/* ── Avatar circle ─────────────────────────────────────────────── */}
-      <div
-        className={cn(
-          'flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-base font-semibold',
-          isCompleted
-            ? 'bg-green-200 text-green-800'
-            : `${avatarStyle.bg} ${avatarStyle.text}`,
-        )}
+      {/* ── Tap area: avatar + client info → client detail ───────────── */}
+      <Link
+        href={`/clients/${client.id}`}
+        className="flex min-w-0 flex-1 items-start gap-3 rtl:flex-row-reverse"
       >
-        {client.name.charAt(0).toUpperCase()}
-      </div>
-
-      {/* ── Client info ───────────────────────────────────────────────── */}
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <p
-          className={cn(
-            'truncate text-base font-semibold',
-            isCompleted ? 'text-green-800' : 'text-foreground',
-          )}
-        >
-          {client.name}
-        </p>
-
         <div
           className={cn(
-            'flex items-center gap-1 text-xs',
-            isCompleted ? 'text-green-700' : 'text-muted-foreground',
+            'flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-base font-semibold',
+            isCompleted
+              ? 'bg-green-200 text-green-800'
+              : `${avatarStyle.bg} ${avatarStyle.text}`,
           )}
         >
-          <MapPin className="h-3 w-3 shrink-0" />
-          <span className="truncate">{client.address}</span>
+          {client.name.charAt(0).toUpperCase()}
         </div>
 
-        {client.note && (
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <p
             className={cn(
-              'text-xs',
-              isCompleted ? 'text-green-600' : 'text-muted-foreground',
+              'truncate text-base font-semibold',
+              isCompleted ? 'text-green-800' : 'text-foreground',
             )}
           >
-            {client.note}
+            {client.name}
           </p>
-        )}
 
-        {isCompleted && localCompletedAt && (
-          <p className="text-xs text-green-600">
-            ⏱ {formatTime(localCompletedAt)}
-          </p>
-        )}
-      </div>
+          <div
+            className={cn(
+              'flex items-center gap-1 text-xs',
+              isCompleted ? 'text-green-700' : 'text-muted-foreground',
+            )}
+          >
+            <MapPin className="h-3 w-3 shrink-0" />
+            <span className="truncate">{client.address}</span>
+          </div>
+
+          {client.note && (
+            <p
+              className={cn(
+                'text-xs',
+                isCompleted ? 'text-green-600' : 'text-muted-foreground',
+              )}
+            >
+              {client.note}
+            </p>
+          )}
+
+          {isCompleted && localCompletedAt && (
+            <p className="text-xs text-green-600">
+              ⏱ {formatTime(localCompletedAt)}
+            </p>
+          )}
+        </div>
+      </Link>
 
       {/* ── Action buttons (stacked column on the right) ──────────────── */}
       <div className="flex shrink-0 flex-col gap-2 rtl:order-first">
